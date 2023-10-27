@@ -220,8 +220,7 @@ class WinForm(QWidget):
         if (self.counter % 50 == 5):
             self.writeToSerial("AT+CSQ")
 
-        # get GPS position, every 25 seconds
-        if (self.gps_active):
+        if self.gps_active:
             if (self.counter % 25 == 0):
                 self.writeToSerial("AT+CGPSINFO")
 
@@ -229,9 +228,8 @@ class WinForm(QWidget):
         if (self.counter % 100 == 20):
             self.downloadSMSs()
 
-        # play ringtone if incoming call, every 2 seconds
-        if (self.call_state == "incoming"):
-            if (self.counter % 2 == 0):
+        if (self.counter % 2 == 0):
+            if (self.call_state == "incoming"):
                 os.system("aplay ringtone.wav > /dev/null 2>&1")
 
         # update the screen
@@ -240,10 +238,14 @@ class WinForm(QWidget):
                 thetime = QDateTime.currentDateTime()
                 time_display = thetime.toString('hh:mm:ss')
                 if (self.network != "" and self.signal != ""):
-                    time_display = self.network + " " + str(int(int(self.signal)/31*100)) + "%\n" + time_display
+                    time_display = (
+                        f"{self.network} {int(int(self.signal) / 31 * 100)}"
+                        + "%\n"
+                        + time_display
+                    )
                 self.tab1.label.setText(time_display)
             else:
-                self.tab1.label.setText("Dial "+self.dialling)
+                self.tab1.label.setText(f"Dial {self.dialling}")
                 self.tab1.btnRedPhone.setEnabled(True)
                 self.tab1.btnRedPhone.setText("Cancel")
                 self.tab1.btnGreenPhone.setText("Call")
@@ -330,14 +332,14 @@ class WinForm(QWidget):
 
 
     def writeToSerial(self,cmd):
-        self.tab4.log.append("> "+cmd)
+        self.tab4.log.append(f"> {cmd}")
         if (not testing):
             cmd = cmd + "\r"
             ser.close()
             ser.open()
             ser.write(cmd.encode())
         else:
-            print("> "+cmd)
+            print(f"> {cmd}")
 
 
     def readFromSerial(self, buffer = 64):
